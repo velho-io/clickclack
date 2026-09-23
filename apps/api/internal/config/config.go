@@ -41,6 +41,7 @@ type Config struct {
 	AccessAUD              string   `json:"access_aud"`
 	PushoverAPIToken       string   `json:"pushover_api_token"`
 	PushoverAPIURL         string   `json:"pushover_api_url"`
+	PushRelayURL           string   `json:"push_relay_url"`
 	R2AccountID            string   `json:"r2_account_id"`
 	R2AccessKeyID          string   `json:"r2_access_key_id"`
 	R2SecretAccessKey      string   `json:"r2_secret_access_key"`
@@ -158,6 +159,9 @@ func Load(path string) (Config, error) {
 	if env := os.Getenv("CLICKCLACK_PUSHOVER_API_URL"); env != "" {
 		cfg.PushoverAPIURL = env
 	}
+	if env := os.Getenv("CLICKCLACK_PUSH_RELAY_URL"); env != "" {
+		cfg.PushRelayURL = env
+	}
 	if env := os.Getenv("CLICKCLACK_R2_ACCOUNT_ID"); env != "" {
 		cfg.R2AccountID = env
 	}
@@ -240,6 +244,11 @@ func (c *Config) ValidateServe() error {
 		return err
 	}
 	c.PushoverAPIURL = pushoverAPIURL
+	pushRelayURL, err := normalizePushoverAPIURL(c.PushRelayURL)
+	if err != nil {
+		return errors.New(strings.ReplaceAll(err.Error(), "CLICKCLACK_PUSHOVER_API_URL", "CLICKCLACK_PUSH_RELAY_URL"))
+	}
+	c.PushRelayURL = strings.TrimRight(pushRelayURL, "/")
 	c.HomeURL = homeURL
 	c.HomeLabel = homeLabel
 	c.PublicAPIURL = publicAPIURL

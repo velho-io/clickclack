@@ -26,6 +26,7 @@ type Server struct {
 	access                *accessVerifier
 	frontendURL           string
 	homeLinkConfig        HomeLinkConfig
+	pushRelayURL          string
 	publicAPIURL          string
 	embedFrameAncestors   []string
 	cookies               authpolicy.CookieNames
@@ -84,14 +85,16 @@ const (
 )
 
 type Options struct {
-	UploadDir           string
-	UploadStorage       uploadstore.Store
-	GitHubOAuth         GitHubOAuthConfig
-	OpenClawID          OpenClawIDConfig
-	Access              AccessConfig
-	FrontendURL         string
-	PublicAPIURL        string
-	HomeLink            HomeLinkConfig
+	UploadDir     string
+	UploadStorage uploadstore.Store
+	GitHubOAuth   GitHubOAuthConfig
+	OpenClawID    OpenClawIDConfig
+	Access        AccessConfig
+	FrontendURL   string
+	PublicAPIURL  string
+	HomeLink      HomeLinkConfig
+	// PushRelayURL is advertised at GET /api/push-relay for mobile clients.
+	PushRelayURL        string
 	EmbedFrameAncestors []string
 	CookieNames         authpolicy.CookieNames
 	DisableDevAuth      bool
@@ -131,6 +134,7 @@ func New(st store.Store, hub *realtime.Hub, options Options) *Server {
 		access:                newAccessVerifier(options.Access),
 		frontendURL:           strings.TrimSpace(options.FrontendURL),
 		homeLinkConfig:        options.HomeLink.withDefaults(),
+		pushRelayURL:          options.PushRelayURL,
 		publicAPIURL:          strings.TrimRight(strings.TrimSpace(options.PublicAPIURL), "/"),
 		embedFrameAncestors:   append([]string(nil), options.EmbedFrameAncestors...),
 		cookies:               cookieNames,
@@ -184,6 +188,7 @@ func (s *Server) Handler() http.Handler {
 		r.Get("/auth/openclaw/start", s.openclawIDStart)
 		r.Get("/auth/openclaw/callback", s.openclawIDCallback)
 		r.Get("/home-link", s.homeLink)
+		r.Get("/push-relay", s.pushRelay)
 		r.Get("/me", s.me)
 		r.Patch("/me", s.updateMe)
 		r.Get("/me/bots", s.listMyBots)

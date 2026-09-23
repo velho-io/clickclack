@@ -49,6 +49,7 @@ hook in `cmd/clickclack/main.go`.
 | —                     | `CLICKCLACK_GITHUB_MODERATOR_ORG`| unset       | Optional GitHub org whose members become guest-workspace moderators. Requires `read:org` scope. |
 | —                     | `CLICKCLACK_PUSHOVER_API_TOKEN`  | unset       | Pushover application API token. Users still opt in with their own Pushover user key in account settings. |
 | —                     | `CLICKCLACK_PUSHOVER_API_URL`    | Pushover    | Optional Pushover-compatible messages endpoint, e.g. a self-hosted relay at `https://push.example.com/1/messages.json`. HTTPS required except for loopback hosts. |
+| —                     | `CLICKCLACK_PUSH_RELAY_URL`      | unset       | Public base URL of a Pushover-compatible relay that mobile clients register devices with. Advertised at `GET /api/push-relay` only while Pushover delivery is configured. HTTPS required except for loopback hosts. |
 | —                     | `CLICKCLACK_R2_ACCOUNT_ID`       | unset       | Cloudflare account ID for `r2://` uploads. |
 | —                     | `CLICKCLACK_R2_ACCESS_KEY_ID`    | unset       | R2 API token access key ID. |
 | —                     | `CLICKCLACK_R2_SECRET_ACCESS_KEY`| unset       | R2 API token secret access key. |
