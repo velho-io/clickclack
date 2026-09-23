@@ -84,6 +84,10 @@ random topic on ntfy.sh. Each person's topic and key are in
 settings → Notifications → Mobile push. Create more with
 `curl -s https://push.velho.io/v1/ntfy -H 'Content-Type: application/json' -d '{"topic":"velho-<name>-<random>"}'`.
 ntfy.sh topics are public to anyone who knows the name, so keep topics random.
+`CLICKCLACK_PUSH_RELAY_URL=https://push.velho.io` publishes the relay at the
+public `GET /api/push-relay` endpoint (branch `velho/push-relay-discovery`,
+merged). After sign-in, the mobile app reads it and offers push once, so
+nobody types a relay address.
 The ClickClack mobile app (`~/Projects/velho/clickclack-mobile`) will register
 Expo push tokens with the relay on its own.
 
