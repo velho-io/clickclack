@@ -1,0 +1,12 @@
+# Velho deployment (Railway project velho-chat). Railway rejects Dockerfile VOLUME,
+# so Dockerfile.railway is the upstream Dockerfile minus that line; the data dir
+# /app/data is a Railway volume instead.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.railway"
+
+[deploy]
+healthcheckPath = "/readyz"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
