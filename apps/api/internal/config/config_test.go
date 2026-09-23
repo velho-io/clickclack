@@ -317,3 +317,24 @@ func TestLoadPasswordAuthFlag(t *testing.T) {
 		t.Fatalf("expected the config file to enable password auth, got %#v err=%v", cfg, err)
 	}
 }
+
+func TestNormalizePushoverAPIURL(t *testing.T) {
+	for _, tc := range []struct {
+		raw, want string
+		ok        bool
+	}{
+		{"", "", true},
+		{" https://push.example.com/1/messages.json ", "https://push.example.com/1/messages.json", true},
+		{"http://127.0.0.1:8081/1/messages.json", "http://127.0.0.1:8081/1/messages.json", true},
+		{"http://localhost:8081/1/messages.json", "http://localhost:8081/1/messages.json", true},
+		{"http://push.example.com/1/messages.json", "", false},
+		{"https://user:pass@push.example.com/1/messages.json", "", false},
+		{"ftp://push.example.com/", "", false},
+		{"/1/messages.json", "", false},
+	} {
+		got, err := normalizePushoverAPIURL(tc.raw)
+		if (err == nil) != tc.ok || got != tc.want {
+			t.Errorf("normalizePushoverAPIURL(%q) = %q, %v; want %q ok=%v", tc.raw, got, err, tc.want, tc.ok)
+		}
+	}
+}

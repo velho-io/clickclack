@@ -141,7 +141,9 @@ func serve(args []string) error {
 	}
 	var pushNotifier httpapi.PushNotifier
 	if cfg.PushoverAPIToken != "" {
-		pushNotifier = httpapi.NewPushoverNotifier(cfg.PushoverAPIToken)
+		notifier := httpapi.NewPushoverNotifier(cfg.PushoverAPIToken)
+		notifier.URL = cfg.PushoverAPIURL
+		pushNotifier = notifier
 	}
 	log.Printf("ClickClack listening on %s", displayURL(cfg.Addr))
 	server := httpapi.New(st, realtime.NewHub(), httpapi.Options{
