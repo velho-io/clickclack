@@ -69,11 +69,23 @@ Hot backup: `clickclack backup --data /app/data --out /app/data/backup-$(date +%
 
 ## Push notifications
 
-Pushover costs $4.99 per user per platform, so we don't use it. The plan is
-our own Pushover-compatible relay (`~/Projects/velho/velho-push`) plus the
-ClickClack mobile app (`~/Projects/velho/clickclack-mobile`). Branch
-`velho/pushover-url` adds `CLICKCLACK_PUSHOVER_API_URL` so ClickClack can
-send to the relay. Merge it into `velho-release` when the relay is deployed.
+We don't use Pushover because it charges each user per platform. ClickClack
+sends Pushover-style requests to our own relay instead: service `velho-push`
+in the same Railway project, at https://push.velho.io (repo
+`~/Projects/velho/velho-push`, deployed with `railway up`). The relay has its
+own volume at `/data` and holds the only app token in `PUSH_APP_TOKENS`, which
+matches `CLICKCLACK_PUSHOVER_API_TOKEN` here.
+`CLICKCLACK_PUSHOVER_API_URL=https://push.velho.io/1/messages.json` comes from
+the merged `velho/pushover-url` branch, which is also an upstream PR candidate.
+
+Phone setup today (free): the free ntfy app, subscribed to a private
+random topic on ntfy.sh. Each person's topic and key are in
+`~/.config/velho/chat-push-keys.txt`. The person pastes the key in Account
+settings → Notifications → Mobile push. Create more with
+`curl -s https://push.velho.io/v1/ntfy -H 'Content-Type: application/json' -d '{"topic":"velho-<name>-<random>"}'`.
+ntfy.sh topics are public to anyone who knows the name, so keep topics random.
+The ClickClack mobile app (`~/Projects/velho/clickclack-mobile`) will register
+Expo push tokens with the relay on its own.
 
 ## Bots / alerts to #ops-alerts
 
