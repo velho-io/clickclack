@@ -14,6 +14,7 @@ deploys that branch.
 | Backups | Railway volume backups: daily (6-day retention) + weekly (27-day retention) |
 | DNS | Cloudflare `chat.velho.io` CNAME → `yd2jun57.up.railway.app` (DNS-only) |
 | Health | `GET /readyz` (Railway healthcheck) |
+| Mobile app | https://mobile.velho.io: Android APK download page (service `mobile-download`, published from `~/Projects/velho/clickclack-mobile` with `scripts/publish-download.sh`) |
 | Workspace | "Velho", slug `clickclack` (keep the slug: GitHub sign-ins join the workspace with this slug) |
 
 Service variables: `CLICKCLACK_PUBLIC_URL=https://chat.velho.io`,
