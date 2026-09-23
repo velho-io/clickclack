@@ -53,20 +53,32 @@ existing password user: it creates a separate account.
 
 Hot backup: `clickclack backup --data /app/data --out /app/data/backup-$(date +%F).db`.
 
-## Optional follow-ups
+## Sign-in
 
-- **GitHub sign-in** (self-service for velho-io org members). Create an
-  OAuth app under github.com/organizations/velho-io/settings/applications
-  with callback `https://chat.velho.io/api/auth/github/callback`, then set
-  `CLICKCLACK_GITHUB_CLIENT_ID`, `CLICKCLACK_GITHUB_CLIENT_SECRET`, and
-  `CLICKCLACK_GITHUB_ALLOWED_ORG=velho-io`. GitHub identities are **not**
-  linked to existing password accounts by email. Existing users should keep
-  password login, or move ownership to their GitHub account first.
-- **Phone push**: register an application at pushover.net and set
-  `CLICKCLACK_PUSHOVER_API_TOKEN`. Each person then pastes their own
-  Pushover user key under Account settings → Notifications.
-- **Bots / alerts to #ops-alerts**: `clickclack admin bot create ... --scopes bot:write`
-  (see docs/bot-installs.md). The incoming webhook only reads the `text` field.
+- **GitHub** (velho-io org only): org-owned OAuth app "Velho Chat", callback
+  `https://chat.velho.io/api/auth/github/callback`. Vars:
+  `CLICKCLACK_GITHUB_CLIENT_ID`, `CLICKCLACK_GITHUB_CLIENT_SECRET`,
+  `CLICKCLACK_GITHUB_ALLOWED_ORG=velho-io`. ClickClack never links GitHub to an
+  existing account by email, so the four founding accounts were linked by
+  hand: an `identities` row with `provider='github'` and
+  `provider_subject=<GitHub numeric user id>` (`gh api users/<login> --jq .id`).
+  Do the same *before* a new password user first signs in with GitHub, or
+  they end up with two accounts. The pre-change backup is
+  `/app/data/backup-pre-github-link.db`.
+- **Password**: for people without GitHub (see Admin commands).
+
+## Push notifications
+
+Pushover costs $4.99 per user per platform, so we don't use it. The plan is
+our own Pushover-compatible relay (`~/Projects/velho/velho-push`) plus the
+ClickClack mobile app (`~/Projects/velho/clickclack-mobile`). Branch
+`velho/pushover-url` adds `CLICKCLACK_PUSHOVER_API_URL` so ClickClack can
+send to the relay. Merge it into `velho-release` when the relay is deployed.
+
+## Bots / alerts to #ops-alerts
+
+`clickclack admin bot create ... --scopes bot:write` (see docs/bot-installs.md).
+The incoming webhook only reads the `text` field.
 
 Known limit: behind Railway's proxy, the server sees the proxy address, not
 the real client IP. Per-address login rate limits therefore apply to all
