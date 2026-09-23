@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -39,6 +40,7 @@ type Config struct {
 	AccessTeamDomain       string   `json:"access_team_domain"`
 	AccessAUD              string   `json:"access_aud"`
 	PushoverAPIToken       string   `json:"pushover_api_token"`
+	PushoverAPIURL         string   `json:"pushover_api_url"`
 	R2AccountID            string   `json:"r2_account_id"`
 	R2AccessKeyID          string   `json:"r2_access_key_id"`
 	R2SecretAccessKey      string   `json:"r2_secret_access_key"`
@@ -153,6 +155,9 @@ func Load(path string) (Config, error) {
 	if env := os.Getenv("CLICKCLACK_PUSHOVER_API_TOKEN"); env != "" {
 		cfg.PushoverAPIToken = env
 	}
+	if env := os.Getenv("CLICKCLACK_PUSHOVER_API_URL"); env != "" {
+		cfg.PushoverAPIURL = env
+	}
 	if env := os.Getenv("CLICKCLACK_R2_ACCOUNT_ID"); env != "" {
 		cfg.R2AccountID = env
 	}
@@ -230,6 +235,11 @@ func (c *Config) ValidateServe() error {
 	if err != nil {
 		return err
 	}
+	pushoverAPIURL, err := normalizePushoverAPIURL(c.PushoverAPIURL)
+	if err != nil {
+		return err
+	}
+	c.PushoverAPIURL = pushoverAPIURL
 	c.HomeURL = homeURL
 	c.HomeLabel = homeLabel
 	c.PublicAPIURL = publicAPIURL
@@ -332,4 +342,28 @@ func normalizeHomeLink(rawURL, rawLabel string) (string, string, error) {
 		return "", "", fmt.Errorf("CLICKCLACK_HOME_LABEL must be at most %d characters", MaxHomeLabelLength)
 	}
 	return homeURL, homeLabel, nil
+}
+
+// normalizePushoverAPIURL validates an optional Pushover-compatible messages
+// endpoint. The app token travels in the request body, so remote endpoints must
+// use HTTPS; plain HTTP is accepted only for loopback relays.
+func normalizePushoverAPIURL(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "", nil
+	}
+	parsed, err := url.Parse(raw)
+	if err != nil || parsed.Host == "" || parsed.User != nil || parsed.Fragment != "" {
+		return "", errors.New("CLICKCLACK_PUSHOVER_API_URL must be an absolute URL without credentials or fragment")
+	}
+	switch parsed.Scheme {
+	case "https":
+	case "http":
+		if ip := net.ParseIP(parsed.Hostname()); parsed.Hostname() != "localhost" && (ip == nil || !ip.IsLoopback()) {
+			return "", errors.New("CLICKCLACK_PUSHOVER_API_URL must use HTTPS for non-loopback hosts")
+		}
+	default:
+		return "", errors.New("CLICKCLACK_PUSHOVER_API_URL must use HTTPS")
+	}
+	return parsed.String(), nil
 }

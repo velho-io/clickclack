@@ -129,3 +129,21 @@ type roundTripFunc func(*http.Request) (*http.Response, error)
 func (fn roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return fn(req)
 }
+
+func TestPushoverNotifierUsesConfiguredURL(t *testing.T) {
+	notifier := NewPushoverNotifier("app-token")
+	notifier.URL = "https://push.example.com/1/messages.json"
+	notifier.Client = &http.Client{Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+		if req.URL.String() != notifier.URL {
+			t.Fatalf("unexpected URL %s", req.URL.String())
+		}
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     make(http.Header),
+			Body:       io.NopCloser(strings.NewReader(`{"status":1}`)),
+		}, nil
+	})}
+	if err := notifier.Notify(context.Background(), PushNotification{RecipientKey: "user-key", Title: "t", Message: "m"}); err != nil {
+		t.Fatal(err)
+	}
+}

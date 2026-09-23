@@ -17,7 +17,10 @@ const (
 )
 
 type PushoverNotifier struct {
-	Token  string
+	Token string
+	// URL overrides the Pushover messages endpoint for Pushover-compatible
+	// relays. Empty means api.pushover.net.
+	URL    string
 	Client *http.Client
 }
 
@@ -41,7 +44,11 @@ func (p *PushoverNotifier) Notify(ctx context.Context, notification PushNotifica
 	form.Set("user", user)
 	form.Set("title", notification.Title)
 	form.Set("message", notification.Message)
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, pushoverMessagesURL, strings.NewReader(form.Encode()))
+	endpoint := p.URL
+	if endpoint == "" {
+		endpoint = pushoverMessagesURL
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(form.Encode()))
 	if err != nil {
 		return err
 	}
