@@ -154,6 +154,7 @@ func serve(args []string) error {
 		FrontendURL:         cfg.PublicURL,
 		PublicAPIURL:        cfg.PublicAPIURL,
 		HomeLink:            httpapi.HomeLinkConfig{URL: cfg.HomeURL, Label: cfg.HomeLabel},
+		PushRelayURL:        cfg.PushRelayURL,
 		EmbedFrameAncestors: cfg.EmbedFrameAncestors,
 		GitHubOAuth: httpapi.GitHubOAuthConfig{
 			ClientID:     cfg.GitHubClientID,

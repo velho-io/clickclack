@@ -4098,3 +4098,39 @@ func TestHomeLinkEndpoint(t *testing.T) {
 		})
 	}
 }
+
+func TestPushRelayEndpoint(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		options Options
+		want    string
+	}{
+		{name: "nothing configured", want: ""},
+		{name: "relay without push delivery is not advertised", options: Options{PushRelayURL: "https://push.example.com"}, want: ""},
+		{name: "relay with push delivery", options: Options{PushRelayURL: "https://push.example.com", PushNotifier: NewPushoverNotifier("app-token")}, want: "https://push.example.com"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.options.DisableDevAuth = true
+			server := httptest.NewServer(New(nil, nil, tc.options).Handler())
+			t.Cleanup(server.Close)
+			// Public: no cookie, no bearer token.
+			response, err := http.Get(server.URL + "/api/push-relay")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer response.Body.Close()
+			var payload struct {
+				URL string `json:"url"`
+			}
+			if response.StatusCode != http.StatusOK {
+				t.Fatalf("expected 200, got %d", response.StatusCode)
+			}
+			if err := json.NewDecoder(response.Body).Decode(&payload); err != nil {
+				t.Fatal(err)
+			}
+			if payload.URL != tc.want {
+				t.Fatalf("url = %q, want %q", payload.URL, tc.want)
+			}
+		})
+	}
+}
